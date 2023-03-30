@@ -3,13 +3,13 @@
 import openai
 
 from logging import Logger
-from typing import Any, Optional, List, Tuple, Callable
+from typing import Any, Optional, List, Tuple, Callable, Type
 
-from semantic_kernel.ai.protocols import TextCompletionBackend
+from semantic_kernel.ai.protocols import TextAIBackend
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAITextBackend(TextCompletionBackend):
+class OpenAITextBackend(TextAIBackend):
     """
     A text completion backend that uses the OpenAI API
     to generate text completions.
@@ -17,7 +17,7 @@ class OpenAITextBackend(TextCompletionBackend):
 
     # The list of parameters that are valid for the
     # when passed to complete_* methods via kwargs.
-    # NOTE: we do note allow the `stream` parameter
+    # NOTE: we do not allow the `stream` parameter
     VALID_PARAMS = [
         "max_tokens",
         "temperature",
@@ -42,7 +42,7 @@ class OpenAITextBackend(TextCompletionBackend):
         log: Optional[Logger] = None,
     ) -> None:
         """
-        Initializes a new instance of the OpenAITextCompletion class.
+        Initializes a new instance of the OpenAITextBackend class.
 
         :param model_id: OpenAI model name, see
             https://platform.openai.com/docs/models
@@ -62,6 +62,7 @@ class OpenAITextBackend(TextCompletionBackend):
         self._api_key = api_key
         self._org_id = org_id
         self._log = log or NullLogger()
+        self._api_type = "standard"
 
         # Initialize the OpenAI module with the appropriate
         # API key and organization ID
@@ -72,7 +73,7 @@ class OpenAITextBackend(TextCompletionBackend):
         # A list of hooks to run on the response before returning it
         self._post_response_hooks: List[Callable[..., Any]] = []
 
-    def _setup_open_ai(self) -> openai:
+    def _setup_open_ai(self) -> Type[openai.Completion]:
         """
         Sets up the OpenAI module with the appropriate
         API key and organization ID.
@@ -84,7 +85,7 @@ class OpenAITextBackend(TextCompletionBackend):
         if self._org_id is not None:
             openai.organization = self._org_id
 
-        return openai
+        return openai.Completion
 
     async def _complete_async(self, prompt: str, **kwargs: Any) -> Any:
         # Do basic validation of the prompt string
@@ -112,7 +113,7 @@ class OpenAITextBackend(TextCompletionBackend):
         # and make sure we correctly set the engine/model
         # parameter based on the OpenAI API type
         model_args = {**kwargs}
-        if self._open_ai_instance.api_type == "azure":
+        if self._api_type == "azure":
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
@@ -121,8 +122,8 @@ class OpenAITextBackend(TextCompletionBackend):
         for hook in self._pre_prompt_hooks:
             await hook(prompt, **kwargs)
 
-        # Finally, we'll generate a completion using the `openai` module
-        response: Any = await self._open_ai_instance.Completion.acreate(
+        # Finally, we'll generate a completion using the `openai.Completion` class
+        response: Any = await self._open_ai_instance.acreate(
             prompt=prompt, **model_args
         )
 

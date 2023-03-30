@@ -2,15 +2,15 @@
 
 import openai
 
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Type
 from logging import Logger
 from numpy import ndarray, array
 
-from semantic_kernel.ai.protocols import EmbeddingBackend
+from semantic_kernel.ai.protocols import EmbeddingAIBackend
 from semantic_kernel.utils.null_logger import NullLogger
 
 
-class OpenAIEmbeddingBackend(EmbeddingBackend):
+class OpenAIEmbeddingBackend(EmbeddingAIBackend):
     """
     An embedding generation backend that uses the OpenAI API
     to generate text embeddings (returned as numpy arrays).
@@ -44,12 +44,13 @@ class OpenAIEmbeddingBackend(EmbeddingBackend):
         self._api_key = api_key
         self._org_id = org_id
         self._log = log or NullLogger()
+        self._api_type = "standard"
 
         # Initialize the OpenAI module with the appropriate
         # API key and organization ID
         self._open_ai_instance = self._setup_open_ai()
 
-    def _setup_open_ai(self) -> openai:
+    def _setup_open_ai(self) -> Type[openai.Embedding]:
         """
         Sets up the OpenAI module with the appropriate
         API key and organization ID.
@@ -61,7 +62,7 @@ class OpenAIEmbeddingBackend(EmbeddingBackend):
         if self._org_id is not None:
             openai.organization = self._org_id
 
-        return openai
+        return openai.Embedding
 
     async def generate_embeddings_async(self, texts: List[str], **kwargs) -> ndarray:
         """
@@ -73,15 +74,13 @@ class OpenAIEmbeddingBackend(EmbeddingBackend):
         :return: The embeddings for the given texts.
         """
         model_args = {**kwargs}
-        if self._open_ai_instance.api_type == "azure":
+        if self._api_type == "azure":
             model_args["engine"] = self._model_id
         else:
             model_args["model"] = self._model_id
 
         # Generate the embeddings
-        response: Any = self._open_ai_instance.Completion.create(
-            input=texts, **model_args
-        )
+        response: Any = self._open_ai_instance.acreate(input=texts, **model_args)
 
         # Do some basic validation of the response (these should never fail,
         # unless OpenAI changes their API in a significant way)

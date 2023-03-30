@@ -3,7 +3,7 @@
 from typing import Protocol, List, Tuple, Any
 
 
-class TextCompletionBackend(Protocol):
+class TextAIBackend(Protocol):
     async def complete_single_async(self, prompt: str, **kwargs) -> str:
         """
         Creates a completion for the given prompt.

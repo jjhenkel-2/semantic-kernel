@@ -4,7 +4,7 @@ from typing import Protocol, List
 from numpy import ndarray
 
 
-class EmbeddingBackend(Protocol):
+class EmbeddingAIBackend(Protocol):
     async def generate_embeddings_async(self, texts: List[str], **kwargs) -> ndarray:
         """
         Generates embeddings for the given texts.

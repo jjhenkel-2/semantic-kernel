@@ -1,14 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.ai.protocols.embedding_index import EmbeddingIndex
-from semantic_kernel.ai.protocols.embedding_backend import EmbeddingBackend
-from semantic_kernel.ai.protocols.chat_completion_backend import ChatCompletionBackend
-from semantic_kernel.ai.protocols.text_completion_backend import TextCompletionBackend
+from semantic_kernel.ai.protocols.embedding_ai_backend import EmbeddingAIBackend
+from semantic_kernel.ai.protocols.chat_ai_backend import ChatAIBackend
+from semantic_kernel.ai.protocols.text_ai_backend import TextAIBackend
+from semantic_kernel.ai.protocols.image_ai_backend import ImageAIBackend
 
 
 __all__ = [
     "EmbeddingIndex",
-    "EmbeddingBackend",
-    "ChatCompletionBackend",
-    "TextCompletionBackend",
+    "EmbeddingAIBackend",
+    "ChatAIBackend",
+    "TextAIBackend",
+    "ImageAIBackend",
 ]

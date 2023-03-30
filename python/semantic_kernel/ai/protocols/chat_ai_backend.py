@@ -3,7 +3,7 @@
 from typing import Protocol, List, Tuple
 
 
-class ChatCompletionBackend(Protocol):
+class ChatAIBackend(Protocol):
     async def generate_message_async(
         self, chat_history: Tuple[str, str], **kwargs
     ) -> str:
@@ -21,7 +21,7 @@ class ChatCompletionBackend(Protocol):
         ...
 
     async def generate_messages_async(
-        self, chat_history: Tuple[str, str], **kwargs
+        self, chat_history: Tuple[str, str], n: int, **kwargs
     ) -> List[str]:
         """
         Creates multiple messages for the given chat history.
@@ -36,6 +36,7 @@ class ChatCompletionBackend(Protocol):
         point math.)
 
         :param chat_history: The chat history to use to generate the message.
+        :param n: The number of messages to generate.
         :param kwargs: Additional parameters to pass to the chat completion backend.
 
         :return: The generated messages.
