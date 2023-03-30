@@ -2,21 +2,18 @@
 
 from typing import List, Optional
 
-from semantic_kernel.ai.embeddings.embedding_generator_base import (
-    EmbeddingGeneratorBase,
-)
+from semantic_kernel.ai.protocols import EmbeddingAIBackend
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.protocols import MemoryStore, SemanticTextMemory
 
 
-class SemanticTextMemory(SemanticTextMemoryBase):
-    _storage: MemoryStoreBase
-    _embeddings_generator: EmbeddingGeneratorBase
+class SemanticTextMemory(SemanticTextMemory):
+    _storage: MemoryStore
+    _embeddings_generator: EmbeddingAIBackend
 
     def __init__(
-        self, storage: MemoryStoreBase, embeddings_generator: EmbeddingGeneratorBase
+        self, storage: MemoryStore, embeddings_generator: EmbeddingAIBackend
     ) -> None:
         self._storage = storage
         self._embeddings_generator = embeddings_generator

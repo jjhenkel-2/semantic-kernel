@@ -3,10 +3,10 @@
 from typing import List, Optional
 
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.protocols import SemanticTextMemory
 
 
-class NullMemory(SemanticTextMemoryBase):
+class NullMemory(SemanticTextMemory):
     async def save_information_async(
         self, collection: str, text: str, id: str, description: Optional[str] = None
     ) -> None:

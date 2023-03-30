@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.storage.data_entry import DataEntry
-from semantic_kernel.memory.storage.data_store_base import DataStoreBase
+from semantic_kernel.memory.protocols import DataStore
 
 
-class VolatileDataStore(DataStoreBase):
+class VolatileDataStore(DataStore):
     _store: Dict[str, Dict[str, DataEntry]]
 
     def __init__(self) -> None:
