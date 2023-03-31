@@ -5,13 +5,13 @@ import openai
 from logging import Logger
 from typing import Optional, Type
 
-from semantic_kernel.ai.open_ai.open_ai_text_backend import OpenAITextBackend
+from semantic_kernel.connectors.open_ai import OpenAIEmbeddingBackend
 
 
-class AzureOpenAITextBackend(OpenAITextBackend):
+class AzureOpenAIEmbeddingBackend(OpenAIEmbeddingBackend):
     """
-    A text completion backend that uses the Azure OpenAI API
-    to generate text completions.
+    An embeddings backend that uses the Azure OpenAI API
+    to generate text embeddings.
     """
 
     def __init__(
@@ -23,7 +23,7 @@ class AzureOpenAITextBackend(OpenAITextBackend):
         log: Optional[Logger] = None,
     ) -> None:
         """
-        Initializes a new instance of the OpenAITextBackend class.
+        Initializes a new instance of the OpenAIEmbeddingBackend class.
 
         :param deployment_name: The name of the Azure deployment. This value
             will correspond to the custom name you chose for your deployment
@@ -55,7 +55,7 @@ class AzureOpenAITextBackend(OpenAITextBackend):
         self._api_version = api_version
         self._api_type = "azure"
 
-    def _setup_open_ai(self) -> Type[openai.Completion]:
+    def _setup_open_ai(self) -> Type[openai.Embedding]:
         """
         Sets up the OpenAI module with the appropriate
         API key, API base, and API version.
@@ -68,4 +68,4 @@ class AzureOpenAITextBackend(OpenAITextBackend):
         openai.api_base = self._endpoint
         openai.api_version = self._api_version
 
-        return openai.Completion
+        return openai.Embedding

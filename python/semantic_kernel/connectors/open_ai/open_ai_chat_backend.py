@@ -5,7 +5,7 @@ import openai
 from typing import Tuple, List, Optional, Any, Type, Callable
 from logging import Logger
 
-from semantic_kernel.ai.protocols import ChatAIBackend
+from semantic_kernel.ai import ChatAIBackend
 from semantic_kernel.utils.null_logger import NullLogger
 
 

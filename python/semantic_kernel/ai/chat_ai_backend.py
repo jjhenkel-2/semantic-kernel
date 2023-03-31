@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Protocol, List, Tuple
+from typing import Protocol, List, Tuple, runtime_checkable
+
+from semantic_kernel.ai.ai_backend import AIBackend
 
 
-class ChatAIBackend(Protocol):
+@runtime_checkable
+class ChatAIBackend(AIBackend, Protocol):
     async def generate_message_async(
         self, chat_history: Tuple[str, str], **kwargs
     ) -> str:

@@ -1,9 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Protocol, List, Tuple, Any
+from typing import Protocol, List, Tuple, Any, runtime_checkable
+
+from semantic_kernel.ai.ai_backend import AIBackend
 
 
-class TextAIBackend(Protocol):
+@runtime_checkable
+class TextAIBackend(AIBackend, Protocol):
     async def complete_single_async(self, prompt: str, **kwargs) -> str:
         """
         Creates a completion for the given prompt.

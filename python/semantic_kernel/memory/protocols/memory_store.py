@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from semantic_kernel.ai.protocols import EmbeddingIndex
+from semantic_kernel.ai import EmbeddingIndex
 from semantic_kernel.memory.protocols.data_store import DataStore
 
 

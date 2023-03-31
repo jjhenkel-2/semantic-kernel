@@ -5,7 +5,7 @@ import openai
 from logging import Logger
 from typing import Any, Optional, List, Tuple, Callable, Type
 
-from semantic_kernel.ai.protocols import TextAIBackend
+from semantic_kernel.ai import TextAIBackend
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -108,6 +108,10 @@ class OpenAITextBackend(TextAIBackend):
                 "defaulting to 128 tokens"
             )
             kwargs["max_tokens"] = 128
+
+        # Empty stop sequences array is not allowed, set to None
+        if "stop" in kwargs and len(kwargs["stop"]) == 0:
+            kwargs["stop"] = None
 
         # Now we'll take all of the user-specified parameters
         # and make sure we correctly set the engine/model

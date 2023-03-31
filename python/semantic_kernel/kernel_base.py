@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Any, Dict, Optional
 
-from semantic_kernel.configuration.kernel_config import KernelConfig
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.kernel_config import KernelConfig
+from semantic_kernel.memory.protocols import SemanticTextMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.orchestration.sk_function_base import SKFunctionBase
@@ -33,7 +33,7 @@ class KernelBase(ABC):
 
     @property
     @abstractmethod
-    def memory(self) -> SemanticTextMemoryBase:
+    def memory(self) -> SemanticTextMemory:
         pass
 
     @property
@@ -62,7 +62,7 @@ class KernelBase(ABC):
         pass
 
     @abstractmethod
-    def register_memory(self, memory: SemanticTextMemoryBase) -> None:
+    def register_memory(self, memory: SemanticTextMemory) -> None:
         pass
 
     @abstractmethod

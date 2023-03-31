@@ -3,14 +3,14 @@
 from logging import Logger
 from typing import Callable, Optional
 
-from semantic_kernel.configuration.kernel_config import KernelConfig
+from semantic_kernel.ai import EmbeddingAIBackend, TextAIBackend
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_base import KernelBase
+from semantic_kernel.kernel_config import KernelConfig
 from semantic_kernel.kernel_extensions import KernelExtensions
-from semantic_kernel.memory.memory_store_base import MemoryStoreBase
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.protocols import MemoryStore, SemanticTextMemory
 from semantic_kernel.skill_definition.skill_collection import SkillCollection
 from semantic_kernel.template_engine.prompt_template_engine import PromptTemplateEngine
 from semantic_kernel.utils.null_logger import NullLogger
@@ -18,12 +18,12 @@ from semantic_kernel.utils.null_logger import NullLogger
 
 class KernelBuilder:
     _config: KernelConfig
-    _memory: SemanticTextMemoryBase
-    _memory_storage: Optional[MemoryStoreBase]
+    _memory: SemanticTextMemory
+    _memory_storage: Optional[MemoryStore]
     _log: Logger
 
     def __init__(
-        self, config: KernelConfig, memory: SemanticTextMemoryBase, log: Logger
+        self, config: KernelConfig, memory: SemanticTextMemory, log: Logger
     ) -> None:
         self._config = config
         self._memory = memory
@@ -35,12 +35,12 @@ class KernelBuilder:
         self._config = config
         return self
 
-    def with_memory(self, memory: SemanticTextMemoryBase) -> "KernelBuilder":
+    def with_memory(self, memory: SemanticTextMemory) -> "KernelBuilder":
         Verify.not_null(memory, "The memory instance provided is None")
         self._memory = memory
         return self
 
-    def with_memory_storage(self, storage: MemoryStoreBase) -> "KernelBuilder":
+    def with_memory_storage(self, storage: MemoryStore) -> "KernelBuilder":
         Verify.not_null(storage, "The memory storage instance provided is None")
         self._memory_storage = storage
         return self
@@ -54,6 +54,14 @@ class KernelBuilder:
         self, config_func: Callable[[KernelConfig], KernelConfig]
     ) -> "KernelBuilder":
         self._config = config_func(self._config)
+        return self
+
+    def with_text_backend(self, backend: TextAIBackend) -> "KernelBuilder":
+        self._config.add_text_backend("default", lambda _: backend)
+        return self
+
+    def with_embedding_backend(self, backend: EmbeddingAIBackend) -> "KernelBuilder":
+        self._config.add_embedding_backend("default", lambda _: backend)
         return self
 
     def build(self) -> KernelBase:
@@ -74,7 +82,7 @@ class KernelBuilder:
     def create_kernel(
         config: Optional[KernelConfig] = None,
         log: Optional[Logger] = None,
-        memory: Optional[SemanticTextMemoryBase] = None,
+        memory: Optional[SemanticTextMemory] = None,
     ) -> KernelBase:
         builder = KernelBuilder(KernelConfig(), NullMemory(), NullLogger())
 

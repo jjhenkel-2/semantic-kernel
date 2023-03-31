@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from semantic_kernel.ai.protocols import EmbeddingAIBackend
+from semantic_kernel.ai import EmbeddingAIBackend
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.protocols import MemoryStore, SemanticTextMemory

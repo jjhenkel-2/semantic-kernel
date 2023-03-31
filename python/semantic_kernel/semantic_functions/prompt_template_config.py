@@ -13,7 +13,7 @@ class PromptTemplateConfig:
         presence_penalty: float = 0.0
         frequency_penalty: float = 0.0
         max_tokens: int = 256
-        stop_sequences: List[str] = field(default_factory=list)
+        stop: List[str] = field(default_factory=list)
 
     @dataclass
     class InputParameter:
@@ -51,7 +51,7 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = completition_dict.get("presence_penalty")
         config.completion.frequency_penalty = completition_dict.get("frequency_penalty")
         config.completion.max_tokens = completition_dict.get("max_tokens")
-        config.completion.stop_sequences = completition_dict.get("stop_sequences")
+        config.completion.stop = completition_dict.get("stop")
         config.default_backends = data.get("default_backends")
 
         # Some skills may not have input parameters defined
@@ -81,7 +81,7 @@ class PromptTemplateConfig:
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
         max_tokens: int = 256,
-        stop_sequences: List[str] = [],
+        stop: List[str] = [],
     ) -> "PromptTemplateConfig":
         config = PromptTemplateConfig()
         config.completion.temperature = temperature
@@ -89,5 +89,5 @@ class PromptTemplateConfig:
         config.completion.presence_penalty = presence_penalty
         config.completion.frequency_penalty = frequency_penalty
         config.completion.max_tokens = max_tokens
-        config.completion.stop_sequences = stop_sequences
+        config.completion.stop = stop
         return config

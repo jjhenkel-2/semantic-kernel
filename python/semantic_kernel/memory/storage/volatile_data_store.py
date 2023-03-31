@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from semantic_kernel.memory.memory_record import MemoryRecord
-from semantic_kernel.memory.storage.data_entry import DataEntry
 from semantic_kernel.memory.protocols import DataStore
+from semantic_kernel.memory.storage.data_entry import DataEntry
 
 
 class VolatileDataStore(DataStore):

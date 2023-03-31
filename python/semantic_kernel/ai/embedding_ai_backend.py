@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Protocol, List
+from typing import Protocol, List, runtime_checkable
 from numpy import ndarray
 
+from semantic_kernel.ai.ai_backend import AIBackend
 
-class EmbeddingAIBackend(Protocol):
+
+@runtime_checkable
+class EmbeddingAIBackend(AIBackend, Protocol):
     async def generate_embeddings_async(self, texts: List[str], **kwargs) -> ndarray:
         """
         Generates embeddings for the given texts.

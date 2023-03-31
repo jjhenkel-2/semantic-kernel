@@ -6,7 +6,7 @@ from typing import List, Optional, Any, Type
 from logging import Logger
 from numpy import ndarray, array
 
-from semantic_kernel.ai.protocols import EmbeddingAIBackend
+from semantic_kernel.ai import EmbeddingAIBackend
 from semantic_kernel.utils.null_logger import NullLogger
 
 
@@ -80,7 +80,7 @@ class OpenAIEmbeddingBackend(EmbeddingAIBackend):
             model_args["model"] = self._model_id
 
         # Generate the embeddings
-        response: Any = self._open_ai_instance.acreate(input=texts, **model_args)
+        response: Any = await self._open_ai_instance.acreate(input=texts, **model_args)
 
         # Do some basic validation of the response (these should never fail,
         # unless OpenAI changes their API in a significant way)

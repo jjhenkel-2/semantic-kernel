@@ -2,16 +2,13 @@
 
 from enum import Enum
 from logging import Logger
-from typing import Any, Callable, List, Optional, cast
+from typing import Any, Callable, Dict, List, Optional, cast
 
-from semantic_kernel.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
+from semantic_kernel.ai import AIBackend
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
 from semantic_kernel.memory.null_memory import NullMemory
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.protocols import SemanticTextMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.delegate_handlers import DelegateHandlers
 from semantic_kernel.orchestration.delegate_inference import DelegateInference
@@ -36,10 +33,7 @@ class SKFunction(SKFunctionBase):
     _function: Callable[..., Any]
     _skill_collection: Optional[ReadOnlySkillCollectionBase]
     _log: Logger
-    _ai_backend: Optional[TextCompletionClientBase]
-    _ai_request_settings: CompleteRequestSettings
-    _chat_backend: Optional[ChatCompletionClientBase]
-    _chat_request_settings: ChatRequestSettings
+    _ai_backend: Optional[AIBackend]
 
     @staticmethod
     def from_native_method(method, skill_name="", log=None) -> "SKFunction":
@@ -93,6 +87,13 @@ class SKFunction(SKFunctionBase):
         async def _local_func(client, request_settings, context):
             Verify.not_null(client, "AI LLM backend is empty")
 
+            if request_settings is None:
+                request_settings = {}
+
+            # TODO: refactor the settings here... this is a bit messy
+            config_settings = function_config.prompt_template_config.completion.__dict__
+            request_settings.update(config_settings)
+
             try:
                 if function_config.has_chat_prompt:
                     as_chat_prompt = cast(
@@ -102,8 +103,8 @@ class SKFunction(SKFunctionBase):
                     # Similar to non-chat, render prompt (which renders to a
                     # list of <role, content> messages)
                     messages = await as_chat_prompt.render_messages_async(context)
-                    completion = await client.complete_chat_async(
-                        messages, request_settings
+                    completion = await client.generate_message_async(
+                        messages, **request_settings
                     )
 
                     # Add the last message from the rendered chat prompt
@@ -117,8 +118,8 @@ class SKFunction(SKFunctionBase):
                     context.variables.update(completion)
                 else:
                     prompt = await function_config.prompt_template.render_async(context)
-                    completion = await client.complete_simple_async(
-                        prompt, request_settings
+                    completion = await client.complete_single_async(
+                        prompt, **request_settings
                     )
                     context.variables.update(completion)
             except Exception as e:
@@ -162,10 +163,6 @@ class SKFunction(SKFunctionBase):
     def is_native(self) -> bool:
         return not self._is_semantic
 
-    @property
-    def request_settings(self) -> CompleteRequestSettings:
-        return self._ai_request_settings
-
     def __init__(
         self,
         delegate_type: DelegateTypes,
@@ -187,9 +184,6 @@ class SKFunction(SKFunctionBase):
         self._log = log if log is not None else NullLogger()
         self._skill_collection = None
         self._ai_backend = None
-        self._ai_request_settings = CompleteRequestSettings()
-        self._chat_backend = None
-        self._chat_request_settings = ChatRequestSettings()
 
     def set_default_skill_collection(
         self, skills: ReadOnlySkillCollectionBase
@@ -197,32 +191,10 @@ class SKFunction(SKFunctionBase):
         self._skill_collection = skills
         return self
 
-    def set_ai_backend(
-        self, ai_backend: Callable[[], TextCompletionClientBase]
-    ) -> "SKFunction":
+    def set_ai_backend(self, ai_backend: Callable[[], AIBackend]) -> "SKFunction":
         Verify.not_null(ai_backend, "AI LLM backend factory is empty")
         self._verify_is_semantic()
         self._ai_backend = ai_backend()
-        return self
-
-    def set_chat_backend(
-        self, chat_backend: Callable[[], ChatCompletionClientBase]
-    ) -> "SKFunction":
-        Verify.not_null(chat_backend, "Chat LLM backend factory is empty")
-        self._verify_is_semantic()
-        self._chat_backend = chat_backend()
-        return self
-
-    def set_ai_configuration(self, settings: CompleteRequestSettings) -> "SKFunction":
-        Verify.not_null(settings, "AI LLM request settings are empty")
-        self._verify_is_semantic()
-        self._ai_request_settings = settings
-        return self
-
-    def set_chat_configuration(self, settings: ChatRequestSettings) -> "SKFunction":
-        Verify.not_null(settings, "Chat LLM request settings are empty")
-        self._verify_is_semantic()
-        self._chat_request_settings = settings
         return self
 
     def describe(self) -> FunctionView:
@@ -238,7 +210,7 @@ class SKFunction(SKFunctionBase):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[Dict] = None,
         log: Optional[Logger] = None,
     ) -> SKContext:
         if context is None:
@@ -264,7 +236,7 @@ class SKFunction(SKFunctionBase):
     async def invoke_with_custom_input_async(
         self,
         input: ContextVariables,
-        memory: SemanticTextMemoryBase,
+        memory: SemanticTextMemory,
         skills: ReadOnlySkillCollectionBase,
         log: Optional[Logger] = None,
     ) -> SKContext:
@@ -286,21 +258,11 @@ class SKFunction(SKFunctionBase):
 
         self._ensure_context_has_skills(context)
 
-        if settings is None:
-            if self._ai_backend is not None:
-                settings = self._ai_request_settings
-            elif self._chat_backend is not None:
-                settings = self._chat_request_settings
-            else:
-                raise KernelException(
-                    KernelException.ErrorCodes.UnknownError,
-                    "Semantic functions must have either an AI backend or Chat backend",
-                )
+        if self._ai_backend is None:
+            self._log.error("AI LLM backend is empty")
+            raise ValueError("AI LLM backend is empty")
 
-        backend = (
-            self._ai_backend if self._ai_backend is not None else self._chat_backend
-        )
-        new_context = await self._function(backend, settings, context)
+        new_context = await self._function(self._ai_backend, settings, context)
         context.variables.merge_or_overwrite(new_context.variables)
         return context
 

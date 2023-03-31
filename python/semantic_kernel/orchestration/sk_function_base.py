@@ -2,11 +2,10 @@
 
 from abc import ABC, abstractmethod
 from logging import Logger
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable, Dict, Optional
 
-from semantic_kernel.ai.complete_request_settings import CompleteRequestSettings
-from semantic_kernel.ai.text_completion_client_base import TextCompletionClientBase
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.ai import AIBackend
+from semantic_kernel.memory.protocols import SemanticTextMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.orchestration.sk_context import SKContext
 from semantic_kernel.skill_definition.function_view import FunctionView
@@ -17,6 +16,7 @@ if TYPE_CHECKING:
     )
 
 
+# TODO: to protocol
 class SKFunctionBase(ABC):
     @property
     @abstractmethod
@@ -73,12 +73,6 @@ class SKFunctionBase(ABC):
         """
         pass
 
-    @property
-    @abstractmethod
-    def request_settings(self) -> CompleteRequestSettings:
-        """AI backend settings"""
-        pass
-
     @abstractmethod
     def describe() -> FunctionView:
         """
@@ -95,7 +89,7 @@ class SKFunctionBase(ABC):
         self,
         input: Optional[str] = None,
         context: Optional[SKContext] = None,
-        settings: Optional[CompleteRequestSettings] = None,
+        settings: Optional[Dict] = None,
         log: Optional[Logger] = None
         # TODO: ctoken
     ) -> SKContext:
@@ -105,7 +99,7 @@ class SKFunctionBase(ABC):
         Keyword Arguments:
             input {str} -- The explicit string input (default: {None})
             context {SKContext} -- The context to use
-            settings {CompleteRequestSettings} -- LLM completion settings
+            settings {Dict} -- LLM completion settings
             log {Logger} -- Application logger
 
         Returns:
@@ -118,7 +112,7 @@ class SKFunctionBase(ABC):
     async def invoke_with_custom_input_async(
         self,
         input: ContextVariables,
-        memory: SemanticTextMemoryBase,
+        memory: SemanticTextMemory,
         skills: "ReadOnlySkillCollectionBase",
         log: Optional[Logger] = None,
     ) -> SKContext:
@@ -127,7 +121,7 @@ class SKFunctionBase(ABC):
 
         Arguments:
             input {ContextVariables} -- The custom input
-            memory {SemanticTextMemoryBase} -- The memory to use
+            memory {SemanticTextMemory} -- The memory to use
             skills {ReadOnlySkillCollectionBase} -- The skill collection to use
             log {Logger} -- Application logger
 
@@ -157,7 +151,7 @@ class SKFunctionBase(ABC):
 
     @abstractmethod
     def set_ai_backend(
-        self, backend_factory: Callable[[], TextCompletionClientBase]
+        self, backend_factory: Callable[[], AIBackend]
     ) -> "SKFunctionBase":
         """
         Sets the AI backend used by the semantic function, passing in a factory
@@ -166,21 +160,6 @@ class SKFunctionBase(ABC):
 
         Arguments:
             backend_factory -- AI backend factory
-
-        Returns:
-            SKFunctionBase -- The function instance
-        """
-        pass
-
-    @abstractmethod
-    def set_ai_configuration(
-        self, settings: CompleteRequestSettings
-    ) -> "SKFunctionBase":
-        """
-        Sets the AI completion settings used with LLM requests
-
-        Arguments:
-            settings {CompleteRequestSettings} -- LLM completion settings
 
         Returns:
             SKFunctionBase -- The function instance

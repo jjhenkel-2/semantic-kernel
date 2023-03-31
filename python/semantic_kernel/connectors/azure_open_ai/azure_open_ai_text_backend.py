@@ -5,13 +5,13 @@ import openai
 from logging import Logger
 from typing import Optional, Type
 
-from semantic_kernel.ai.open_ai.open_ai_chat_backend import OpenAIChatBackend
+from semantic_kernel.connectors.open_ai import OpenAITextBackend
 
 
-class AzureOpenAIChatBackend(OpenAIChatBackend):
+class AzureOpenAITextBackend(OpenAITextBackend):
     """
-    A chat backend that uses the Azure OpenAI API
-    to generate chat messages.
+    A text completion backend that uses the Azure OpenAI API
+    to generate text completions.
     """
 
     def __init__(
@@ -19,11 +19,11 @@ class AzureOpenAIChatBackend(OpenAIChatBackend):
         deployment_name: str,
         endpoint: str,
         api_key: str,
-        api_version: str = "2023-03-15-preview",
+        api_version: str = "2022-12-01",
         log: Optional[Logger] = None,
     ) -> None:
         """
-        Initializes a new instance of the OpenAIChatBackend class.
+        Initializes a new instance of the OpenAITextBackend class.
 
         :param deployment_name: The name of the Azure deployment. This value
             will correspond to the custom name you chose for your deployment
@@ -37,7 +37,7 @@ class AzureOpenAIChatBackend(OpenAIChatBackend):
             found in the Keys & Endpoint section when examining your resource in
             the Azure portal. You can use either KEY1 or KEY2.
         :param api_version: The API version to use. (Optional)
-            The default value is "2023-03-15-preview".
+            The default value is "2022-12-01".
         :param log: The logger instance to use. (Optional)
         """
         if not deployment_name or not deployment_name.strip():
@@ -55,7 +55,7 @@ class AzureOpenAIChatBackend(OpenAIChatBackend):
         self._api_version = api_version
         self._api_type = "azure"
 
-    def _setup_open_ai(self) -> Type[openai.ChatCompletion]:
+    def _setup_open_ai(self) -> Type[openai.Completion]:
         """
         Sets up the OpenAI module with the appropriate
         API key, API base, and API version.
@@ -68,4 +68,4 @@ class AzureOpenAIChatBackend(OpenAIChatBackend):
         openai.api_base = self._endpoint
         openai.api_version = self._api_version
 
-        return openai.ChatCompletion
+        return openai.Completion

@@ -6,6 +6,7 @@ import asyncio
 from typing import Tuple
 
 import semantic_kernel as sk
+import semantic_kernel.connectors.open_ai as oai
 from semantic_kernel.core_skills import TextMemorySkill
 
 
@@ -15,15 +16,9 @@ def build_kernel() -> sk.KernelBase:
 
     kernel = (
         sk.kernel_builder()
-        .configure(
-            lambda c: c.add_openai_completion_backend(
-                "davinci-003", "text-davinci-003", api_key, org_id
-            )
-        )
-        .configure(
-            lambda c: c.add_open_ai_embeddings_backend(
-                "ada-002", "text-embedding-ada-002", api_key, org_id
-            )
+        .with_text_backend(oai.OpenAITextBackend("text-davinci-003", api_key, org_id))
+        .with_embedding_backend(
+            oai.OpenAIEmbeddingBackend("text-embedding-ada-002", api_key, org_id)
         )
         .with_memory_storage(sk.memory.VolatileMemoryStore())
         .build()

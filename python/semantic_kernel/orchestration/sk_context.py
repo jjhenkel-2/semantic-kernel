@@ -5,7 +5,7 @@ from typing import Any, Literal, Optional, Tuple, Union
 
 from semantic_kernel.diagnostics.verify import Verify
 from semantic_kernel.kernel_exception import KernelException
-from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.memory.protocols import SemanticTextMemory
 from semantic_kernel.orchestration.context_variables import ContextVariables
 from semantic_kernel.skill_definition.read_only_skill_collection_base import (
     ReadOnlySkillCollectionBase,
@@ -19,14 +19,14 @@ class SKContext:
     _last_exception: Optional[Exception] = None
     _last_error_description: str = ""
     _logger: Logger
-    _memory: SemanticTextMemoryBase
+    _memory: SemanticTextMemory
     _skill_collection: ReadOnlySkillCollectionBase
     _variables: ContextVariables
 
     def __init__(
         self,
         variables: ContextVariables,
-        memory: SemanticTextMemoryBase,
+        memory: SemanticTextMemory,
         skill_collection: ReadOnlySkillCollectionBase,
         logger: Logger,
         # TODO: cancellation token?
@@ -36,7 +36,7 @@ class SKContext:
 
         Arguments:
             variables {ContextVariables} -- The context variables.
-            memory {SemanticTextMemoryBase} -- The semantic text memory.
+            memory {SemanticTextMemory} -- The semantic text memory.
             skill_collection {ReadOnlySkillCollectionBase} -- The skill collection.
             logger {Logger} -- The logger.
         """
@@ -113,12 +113,12 @@ class SKContext:
         return self._variables
 
     @property
-    def memory(self) -> SemanticTextMemoryBase:
+    def memory(self) -> SemanticTextMemory:
         """
         The semantic text memory.
 
         Returns:
-            SemanticTextMemoryBase -- The semantic text memory.
+            SemanticTextMemory -- The semantic text memory.
         """
         return self._memory
 
